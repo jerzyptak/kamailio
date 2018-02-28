@@ -1888,6 +1888,8 @@ static const char *transports[] = {
 	[0x01]	= "RTP/SAVP",
 	[0x02]	= "RTP/AVPF",
 	[0x03]	= "RTP/SAVPF",
+	[0x04]	= "UDP/TLS/RTP/SAVP",
+	[0x05]	= "UDP/TLS/RTP/SAVPF",
 };
 
 static int parse_flags(struct ng_flags_parse *ng_flags, struct sip_msg *msg, enum rtpe_operation *op,
@@ -2065,6 +2067,23 @@ static int parse_flags(struct ng_flags_parse *ng_flags, struct sip_msg *msg, enu
 					goto next;
 				}
 				break;
+
+			case 16:
+				if (str_eq(&key, "UDP/TLS/RTP/SAVP"))
+					ng_flags->transport = 0x104;
+				else
+					goto generic;
+				goto next;
+				break;
+
+			case 17:
+				if (str_eq(&key, "UDP/TLS/RTP/SAVPF"))
+					ng_flags->transport = 0x105;
+				else
+					goto generic;
+				goto next;
+				break;
+
 		}
 
 generic:
@@ -2165,7 +2184,7 @@ static bencode_item_t *rtpp_function_call(bencode_buffer_t *bencbuf, struct sip_
 		bencode_dictionary_add(ng_flags.dict, "replace", ng_flags.replace);
 	if ((ng_flags.transport & 0x100))
 		bencode_dictionary_add_string(ng_flags.dict, "transport-protocol",
-				transports[ng_flags.transport & 0x003]);
+				transports[ng_flags.transport & 0x007]);
 	if (ng_flags.rtcp_mux && ng_flags.rtcp_mux->child)
 		bencode_dictionary_add(ng_flags.dict, "rtcp-mux", ng_flags.rtcp_mux);
 
